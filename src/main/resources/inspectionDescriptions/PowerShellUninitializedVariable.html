@@ -1,0 +1,10 @@
+<!-- SPDX-FileCopyrightText: 2026 intellij-powershell contributors <https://github.com/intellij-powershell/intellij-powershell>
+     SPDX-License-Identifier: Apache-2.0 -->
+<html><body>
+Reports variables that may be read before assignment in the current file, including reads before a later
+assignment and assignments made on only some branches. Parameters, automatic variables, known outer
+captures and explicitly scoped/provider variables are excluded.
+<p>PowerShell can create variables dynamically or supply them from a calling scope, dot-sourced script,
+or module. This inspection cannot prove those variables exist. Disable the inspection for code that
+intentionally relies on an external scope, or make dependencies explicit with parameters.</p>
+</body></html>

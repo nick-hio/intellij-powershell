@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2026 intellij-powershell contributors <https://github.com/intellij-powershell/intellij-powershell>
+# SPDX-License-Identifier: Apache-2.0
+
+name: Type Insight test build
+on:
+  push:
+    branches: [feature/static-type-analysis]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/cache@v6
+        with:
+          path: ~/.local/share/gradle-jvm
+          key: ${{ runner.os }}-${{ hashFiles('gradlew*') }}
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Check local analysis and build installable plugin
+        run: ./gradlew test --tests '*PowerShellStaticAnalysisTest' buildPlugin verifyDistributionSize verifyPlugin -PwebStormVerificationVersion=2026.2.3
+      - uses: actions/upload-artifact@v7
+        with:
+          name: PowerShell-Type-Insight
+          path: build/distributions/*.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: verification-reports
+          path: build/reports

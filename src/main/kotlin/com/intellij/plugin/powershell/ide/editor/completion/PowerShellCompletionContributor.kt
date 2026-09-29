@@ -21,6 +21,8 @@ import com.intellij.patterns.StandardPatterns.or
 import com.intellij.plugin.powershell.ide.debugger.documentSessionKey
 import com.intellij.plugin.powershell.ide.resolve.*
 import com.intellij.plugin.powershell.ide.search.PowerShellComponentType
+import com.intellij.plugin.powershell.lang.analysis.InferredType
+import com.intellij.plugin.powershell.lang.analysis.PowerShellStaticAnalysis
 import com.intellij.plugin.powershell.lang.lsp.ide.EditorEventManager
 import com.intellij.plugin.powershell.lang.lsp.psi.LSPWrapperPsiElementImpl
 import com.intellij.plugin.powershell.lang.lsp.util.DocumentUtils.offsetToLSPPos
@@ -63,11 +65,27 @@ class PowerShellCompletionContributor : CompletionContributor() {
   override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
     if(parameters.editor.document.getUserData(documentSessionKey) != null)
       return
+    addInferredMembers(parameters, result)
     @Suppress("UnstableApiUsage") val gotResultFromHost = runBlockingCancellable {
       getCompletionFromLanguageHost(parameters, result)
     }
     if (gotResultFromHost) return
     super.fillCompletionVariants(parameters, result)
+  }
+
+  private fun addInferredMembers(parameters: CompletionParameters, result: CompletionResultSet) {
+    val member = PsiTreeUtil.getParentOfType(parameters.position, PowerShellMemberAccessExpression::class.java) ?: return
+    // Only complete the member name, not a variable nested in the receiver expression.
+    val identifier = member.referenceIdentifier ?: return
+    if (!PsiTreeUtil.isAncestor(identifier, parameters.position, false)) return
+    val receiver = member.qualifier ?: return
+    val inferred = PowerShellStaticAnalysis.forFile(member.containingFile).typeOf(receiver)
+    val adjusted = adjustPrefixMatcher(result)
+    inferred.members().forEach { (name, type) ->
+      val insertion = if (name.matches(Regex("[\\p{L}_][\\p{L}\\p{N}_]*"))) name else "'${name.replace("'", "''")}'"
+      adjusted.addElement(LookupElementBuilder.create(insertion).withPresentableText(name)
+        .withTypeText(type.display(), true).withIcon(PowerShellComponentType.PROPERTY.getIcon()))
+    }
   }
 
   private suspend fun getCompletionFromLanguageHost(parameters: CompletionParameters, result: CompletionResultSet): Boolean {
@@ -230,7 +248,9 @@ class PowerShellCompletionContributor : CompletionContributor() {
     return when (e) {
       is PowerShellVariable -> {
         val lookupString = getVariableLookupString(context, e)
+        val type = PowerShellStaticAnalysis.forFile(e.containingFile).typeOf(e)
         LookupElementBuilder.create(e, lookupString).withIcon(icon).withPresentableText(lookupString)
+          .withTypeText(type.takeUnless { it == InferredType.UNKNOWN }?.display(), true)
       }
       is PowerShellCallableDeclaration -> LookupElementBuilder.create(e).withIcon(icon).withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
       is PowerShellComponent -> LookupElementBuilder.create(e).withIcon(icon)

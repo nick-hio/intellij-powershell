@@ -6,6 +6,7 @@
  */
 
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.GenerateLexerTask
 import org.jetbrains.intellij.platform.gradle.tasks.GenerateParserTask
@@ -104,11 +105,17 @@ dependencies {
 
 intellijPlatform {
   pluginConfiguration {
-    name = "PowerShell"
+    name = "PowerShell (Type Insight Fork)"
+    ideaVersion {
+      sinceBuild = "262"
+      untilBuild = "262.*"
+    }
   }
   pluginVerification {
     ides {
-      select {
+      if (providers.gradleProperty("webStormVerificationVersion").isPresent) {
+        create(IntelliJPlatformType.WebStorm, providers.gradleProperty("webStormVerificationVersion").get())
+      } else select {
         channels = listOf(
           ProductRelease.Channel.RELEASE,
           ProductRelease.Channel.EAP

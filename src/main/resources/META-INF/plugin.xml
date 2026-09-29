@@ -7,10 +7,12 @@
 
 <idea-plugin require-restart="true">
   <id>com.intellij.plugin.adernov.powershell</id>
-  <name>PowerShell</name>
-  <vendor email="andrey.dernov@gmail.com" url="https://github.com/intellij-powershell/intellij-powershell/">andrey.dernov@gmail.com</vendor>
+  <name>PowerShell (Type Insight Fork)</name>
+  <vendor url="https://github.com/nick-hio/intellij-powershell">nick-hio (fork of intellij-powershell)</vendor>
 
   <description><![CDATA[
+    <p>Experimental Type Insight fork: local type and object-shape documentation, property completion,
+    and flow-sensitive warnings for variables read before assignment. Based on intellij-powershell.</p>
     <p>Provides <a href="https://docs.microsoft.com/en-us/powershell/scripting/powershell-scripting">PowerShell</a> code completion and script execution support for IntelliJ IDEs.</p>
     <p><b>Plugin page:</b> <a href="https://plugins.jetbrains.com/plugin/10249">https://plugins.jetbrains.com/plugin/10249</a></p>
     <p>This plugin bundles the following third-party software:</p>
@@ -118,6 +120,11 @@
                      groupKey="settings.powershell" enabledByDefault="true" level="SERVER PROBLEM" hasStaticDescription="true" suppressId="PSScriptAnalyzer"
                      implementationClass="com.intellij.plugin.powershell.lang.lsp.ide.inspection.PSESInspection"/>
 
+    <localInspection language="PowerShell" shortName="PowerShellUninitializedVariable"
+                     displayName="Variable may be read before assignment" groupName="PowerShell"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="com.intellij.plugin.powershell.ide.inspection.PowerShellUninitializedVariableInspection"/>
+
     <applicationConfigurable id="Settings.PowerShell"
                              groupId="language"
                              instance="com.intellij.plugin.powershell.lang.lsp.ide.settings.PowerShellConfigurable"
@@ -125,8 +132,6 @@
                              key="settings.powershell"/>
 
     <editorFactoryListener implementation="com.intellij.plugin.powershell.lang.lsp.ide.listeners.EditorLSPListener"/>
-
-    <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
 
     <notificationGroup displayType="STICKY_BALLOON" id="PowerShell.MissingExtension" hideFromSettings="true"/>
   </extensions>

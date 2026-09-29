@@ -5,7 +5,19 @@ SPDX-FileCopyrightText: 2023-2026 intellij-powershell contributors <https://gith
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# intellij-powershell [![JetBrains Plugins][badge-plugins]][plugin-repository]
+# intellij-powershell — Type Insight Fork
+
+This experimental fork adds local type/shape documentation, object-property completion and warnings
+for variables read before assignment. It targets WebStorm 2026.2, including 2026.2.3, and retains the
+original plugin's language server, execution and debugging features.
+
+**[Installation, examples and limitations](doc/TYPE_INSIGHT.md)** ·
+**[Try the sample script](examples/type-insight.ps1)** ·
+**[Download a test build](https://github.com/nick-hio/intellij-powershell/actions/workflows/type-insight.yml)**
+
+The original project documentation follows.
+
+## intellij-powershell [![JetBrains Plugins][badge-plugins]][plugin-repository]
 Adds PowerShell language support to [IntelliJ-based](https://www.jetbrains.com/products.html?type=ide) IDEs.
 
 ### Usage:

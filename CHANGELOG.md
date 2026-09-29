@@ -10,6 +10,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [2.12.0-type-insight.1] - 2026-09-29
+### Added
+- Local static inference for literals, casts, arrays, hashtables, PSCustomObject properties and local function output.
+- Quick Documentation for values, variables and function signatures, including declared OutputType metadata.
+- Completion of known object properties with inferred types, including when PowerShell Editor Services is disabled.
+- A configurable inspection for reads before assignment, with branch, loop, parameter and scope handling.
+- Regression coverage for an uninitialized variable returned by a function with an empty parameter block.
+
+### Changed
+- Identify this distribution as an experimental fork; target IntelliJ Platform 2026.2.
+
 ## [2.12.0] - 2026-07-19
 ### Changed
 - **Requirement update:** IntelliJ Platform 2026.2 is now the minimal supported version.
