@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2026 intellij-powershell contributors <https://github.com/intellij-powershell/intellij-powershell>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# TODO[#N] markers refer to upstream issues. Without this, Todosaurus checks the
+# `origin` remote, so it fails in forks.
+[tracker]
+url = "https://github.com/intellij-powershell/intellij-powershell"

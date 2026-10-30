@@ -22,6 +22,10 @@ jobs:
 
     runs-on: ubuntu-26.04
     timeout-minutes: 15
+    env:
+      # Steps can't read secrets in `if:`, so expose only whether they are set ('true' or 'false').
+      # Without the updater app (e.g. in forks), the job still checks for updates but opens no PR.
+      HAS_UPDATER_APP: ${{ secrets.IJ_UPDATER_APP_ID != '' && secrets.IJ_UPDATER_PRIVATE_KEY != '' }}
     steps:
       - name: "Check out the sources"
         uses: actions/checkout@v7
@@ -30,14 +34,14 @@ jobs:
         uses: ForNeVeR/intellij-updater@v1
         name: "Update the dependency versions"
 
-      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && env.HAS_UPDATER_APP == 'true'
         uses: actions/create-github-app-token@v3
         id: generate-token
         with:
           app-id: ${{ secrets.IJ_UPDATER_APP_ID }}
           private-key: ${{ secrets.IJ_UPDATER_PRIVATE_KEY }}
 
-      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && env.HAS_UPDATER_APP == 'true'
         name: "Create a PR"
         uses: peter-evans/create-pull-request@v8
         with:
@@ -48,6 +52,13 @@ jobs:
           title: ${{ steps.update.outputs.pr-title }}
           body-path: ${{ steps.update.outputs.pr-body-path }}
 
+      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && env.HAS_UPDATER_APP != 'true'
+        name: "Report the skipped PR"
+        shell: bash
+        env:
+          PR_TITLE: ${{ steps.update.outputs.pr-title }}
+        run: echo "::warning title=Dependency update available::${PR_TITLE}. No PR was created because the IJ_UPDATER_APP_ID and IJ_UPDATER_PRIVATE_KEY secrets are not set."
+
   powershell-modules:
     permissions:
       contents: write
@@ -55,11 +66,15 @@ jobs:
 
     runs-on: ubuntu-26.04
     timeout-minutes: 15
+    env:
+      # Steps can't read secrets in `if:`, so expose only whether they are set ('true' or 'false').
+      # Without the updater app (e.g. in forks), the job still checks for updates but opens no PR.
+      HAS_UPDATER_APP: ${{ secrets.IJ_UPDATER_APP_ID != '' && secrets.IJ_UPDATER_PRIVATE_KEY != '' }}
     steps:
       - name: "Check out the sources"
         uses: actions/checkout@v7
 
-      - if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+      - if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && env.HAS_UPDATER_APP == 'true'
         uses: actions/create-github-app-token@v3
         id: generate-token
         with:
@@ -73,7 +88,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && env.HAS_UPDATER_APP == 'true'
         name: "Create a PR"
         uses: peter-evans/create-pull-request@v8
         with:
@@ -83,3 +98,10 @@ jobs:
           commit-message: ${{ steps.update.outputs.commit-message }}
           title: ${{ steps.update.outputs.pr-title }}
           body-path: ${{ steps.update.outputs.pr-body-path }}
+
+      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && env.HAS_UPDATER_APP != 'true'
+        name: "Report the skipped PR"
+        shell: bash
+        env:
+          PR_TITLE: ${{ steps.update.outputs.pr-title }}
+        run: echo "::warning title=Dependency update available::${PR_TITLE}. No PR was created because the IJ_UPDATER_APP_ID and IJ_UPDATER_PRIVATE_KEY secrets are not set."
